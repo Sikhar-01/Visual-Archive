@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 type InstallPrompt = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed" }> };
 
-export default function ServiceWorkerRegistration() {
+export default function ServiceWorkerRegistration({ showButton = true }: { showButton?: boolean }) {
   const [installPrompt, setInstallPrompt] = useState<InstallPrompt | null>(null);
 
   useEffect(() => {
@@ -33,5 +33,5 @@ export default function ServiceWorkerRegistration() {
     if (choice.outcome !== "accepted") setInstallPrompt(null);
   }
 
-  return installPrompt ? <button className="install-app-button" onClick={installApp} type="button">Install app</button> : null;
+  return installPrompt && showButton ? <button className="install-app-button" onClick={installApp} type="button">Install app</button> : null;
 }

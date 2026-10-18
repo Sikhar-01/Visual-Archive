@@ -10,6 +10,7 @@ import LibraryNameDialog, { type LibraryDialogMode } from "@/components/library/
 import LibraryHome from "@/components/library/LibraryHome";
 import LibraryWorkspace from "@/components/library/LibraryWorkspace";
 import ConfirmationDialog, { type ConfirmationRequest } from "@/components/ui/ConfirmationDialog";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 let initialLibrariesPromise: Promise<Library[]> | undefined;
 const APPEARANCE_KEY = "dragDropLibrary.appearance.v1";
@@ -361,6 +362,7 @@ export default function Home() {
   const editingCard = active?.cards.find((card) => card.id === editingId);
 
   return <main className={`app-shell${active ? " workspace-shell" : ""}`}>
+    <ServiceWorkerRegistration showButton={!active && !appearanceOpen} />
     <BackgroundLayer {...appearance} />
     <AppearanceDrawer
       open={appearanceOpen}
