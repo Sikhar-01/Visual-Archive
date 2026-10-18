@@ -1,0 +1,2 @@
+cardCount.textContent = "Loading...";
+init();

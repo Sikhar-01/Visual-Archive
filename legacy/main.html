@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Drag Drop Library</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<main class="app-shell view" id="libraryView">
+    <header class="library-hero">
+        <div>
+            <h1>Libraries</h1>
+            <p>Open a board, make a new one, or search across library names and card titles.</p>
+        </div>
+        <div class="actions">
+            <button class="button primary" id="addLibraryBtn" type="button" title="Add a new library">
+                <span aria-hidden="true">+</span>
+                New library
+            </button>
+        </div>
+    </header>
+
+    <section class="library-controls" aria-label="Library controls">
+        <label class="search-wrap">
+            <span aria-hidden="true">&#8981;</span>
+            <input id="librarySearchInput" type="search" placeholder="Search libraries or card names" autocomplete="off" />
+        </label>
+        <div class="stat" id="libraryCount">0 libraries</div>
+    </section>
+
+    <section class="library-grid" id="libraryGrid" aria-label="Saved libraries">
+        <div class="empty-state" id="libraryEmptyState">No libraries found.</div>
+    </section>
+</main>
+
+<main class="app-shell view hidden" id="boardView">
+    <header class="topbar">
+        <div class="brand">
+            <div class="board-title-row">
+                <button class="button icon" id="backToLibrariesBtn" type="button" title="Back to libraries">
+                    <span aria-hidden="true">&larr;</span>
+                    <span class="sr-only">Back to libraries</span>
+                </button>
+                <div>
+                    <h1 id="boardTitle">Drag Drop Library</h1>
+                    <p id="boardSubtitle">Save visual links, reorder them, and keep a backup when you need one.</p>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="button primary" id="addCardBtn" type="button" title="Add a new empty card">
+                <span aria-hidden="true">+</span>
+                Add card
+            </button>
+            <button class="button" id="importBtn" type="button" title="Import a JSON backup">
+                <span aria-hidden="true">&#8634;</span>
+                Import
+            </button>
+            <button class="button" id="exportBtn" type="button" title="Export a JSON backup">
+                <span aria-hidden="true">&#8681;</span>
+                Export
+            </button>
+        </div>
+    </header>
+
+    <section class="controls" aria-label="Library controls">
+        <label class="search-wrap">
+            <span aria-hidden="true">&#8981;</span>
+            <input id="searchInput" type="search" placeholder="Search titles or links" autocomplete="off" />
+        </label>
+        <div class="slot-control">
+            <label for="slotCountInput">Cards</label>
+            <input id="slotCountInput" type="number" min="0" step="1" inputmode="numeric" />
+        </div>
+        <div class="stat" id="cardCount">0 cards</div>
+        <button class="button danger" id="clearBtn" type="button" title="Delete all saved cards">
+            Clear all
+        </button>
+    </section>
+
+    <section class="container" id="container" aria-label="Saved visual links">
+        <div class="empty-state" id="emptyState">No matching cards.</div>
+    </section>
+</main>
+
+<div class="modal-backdrop" id="editor" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+    <form class="modal" id="editorForm">
+        <div class="modal-header">
+            <div class="modal-title" id="editorTitle">Edit card</div>
+            <button class="button icon" id="closeEditorBtn" type="button" title="Close editor">
+                <span aria-hidden="true">&times;</span>
+                <span class="sr-only">Close editor</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="field">
+                <label for="titleInput">Title</label>
+                <input id="titleInput" type="text" placeholder="Untitled" autocomplete="off" />
+            </div>
+            <div class="field">
+                <label for="linkInput">Hyperlink</label>
+                <input id="linkInput" type="url" placeholder="https://example.com" autocomplete="off" />
+            </div>
+            <div class="field">
+                <label>Image</label>
+                <div class="image-picker" id="editorImagePicker" tabindex="0" role="button">
+                    <div>
+                        <strong>Choose or drop an image</strong>
+                        <span>PNG, JPG, GIF, or WebP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="button" id="removeImageBtn" type="button">Remove image</button>
+            <button class="button primary" type="submit">Save</button>
+        </div>
+    </form>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<input id="cardImageInput" type="file" accept="image/*" />
+<input id="importInput" type="file" accept="application/json,.json" />
+
+<script src="js/state.js" defer></script>
+<script src="js/utils.js" defer></script>
+<script src="js/storage.js" defer></script>
+<script src="js/cards.js" defer></script>
+<script src="js/libraries.js" defer></script>
+<script src="js/events.js" defer></script>
+<script src="js/start.js" defer></script>
+</body>
+</html>
+
