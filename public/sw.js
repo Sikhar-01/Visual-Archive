@@ -1,4 +1,4 @@
-const CACHE_NAME = "visual-archive-shell-v1";
+const CACHE_NAME = "visual-archive-shell-v2";
 const APP_SHELL = "/";
 
 self.addEventListener("install", (event) => {
@@ -16,7 +16,7 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(fetch(request).then((response) => {
-      if (response.ok) void caches.open(CACHE_NAME).then((cache) => cache.put(APP_SHELL, response.clone()));
+      if (response.ok) void caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
       return response;
     }).catch(async () => (await caches.match(request)) || (await caches.match(APP_SHELL)) || Response.error()));
     return;

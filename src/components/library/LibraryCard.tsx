@@ -6,6 +6,7 @@ import { cardHasUserData, type Library } from "@/lib/model";
 type LibraryCardProps = {
   library: Library;
   onOpen: () => void;
+  onPrefetch: () => void;
   onRename: () => void;
   onDelete: () => void;
   draggable: boolean;
@@ -17,7 +18,7 @@ type LibraryCardProps = {
   onDrop: (targetId: string, after: boolean) => void;
 };
 
-export default function LibraryCard({ library, onOpen, onRename, onDelete, draggable, isDragging, isDropTarget, onDragStart, onDragEnd, onDragOver, onDrop }: LibraryCardProps) {
+export default function LibraryCard({ library, onOpen, onPrefetch, onRename, onDelete, draggable, isDragging, isDropTarget, onDragStart, onDragEnd, onDragOver, onDrop }: LibraryCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const filled = library.cards.filter(cardHasUserData).length;
 
@@ -48,6 +49,8 @@ export default function LibraryCard({ library, onOpen, onRename, onDelete, dragg
         onDrop(library.id, event.clientX > rect.left + rect.width / 2);
       }}
       onClick={onOpen}
+      onPointerEnter={onPrefetch}
+      onFocus={onPrefetch}
       onKeyDown={(event) => {
         if (event.target !== event.currentTarget) return;
         if (event.key === "Enter" || event.key === " ") {

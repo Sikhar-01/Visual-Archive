@@ -2,7 +2,7 @@
 
 import type { Card } from "@/lib/model";
 import { useEffect, useRef, useState } from "react";
-import { useImageUrl } from "@/hooks/use-image-url";
+import { observeImageWhenNear, useImageUrl } from "@/hooks/use-image-url";
 
 type VisualCardProps = {
   card: Card;
@@ -21,15 +21,7 @@ export default function VisualCard({ card, onEdit, onDelete, onImage, onDropImag
   const imageUrl = useImageUrl(card.imageId, shouldLoadImage);
   useEffect(() => {
     if (!card.imageId || shouldLoadImage || !cardRef.current) return;
-    if (!("IntersectionObserver" in window)) { setShouldLoadImage(true); return; }
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        setShouldLoadImage(true);
-        observer.disconnect();
-      }
-    }, { rootMargin: "320px" });
-    observer.observe(cardRef.current);
-    return () => observer.disconnect();
+    return observeImageWhenNear(cardRef.current, () => setShouldLoadImage(true));
   }, [card.imageId, shouldLoadImage]);
   let linkLabel = "Add a link in edit";
   if (card.link) {
