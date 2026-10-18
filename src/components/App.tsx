@@ -31,6 +31,7 @@ export default function Home() {
   const router = useRouter();
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [librariesReady, setLibrariesReady] = useState(false);
+  const [librariesLoadFailed, setLibrariesLoadFailed] = useState(false);
   const [navigationOverride, setNavigationOverride] = useState<string | null>(null);
   const [navigationPending, setNavigationPending] = useState(false);
   const routeSlug = params?.librarySlug ?? "";
@@ -139,7 +140,7 @@ export default function Home() {
     (initialLibrariesPromise ??= loadLibraries()).then((items) => {
       if (!cancelled) { setLibraries(items); setLibrariesReady(true); }
     }).catch(() => {
-      if (!cancelled) { setLibraries([createLibrary("Main Library", Array.from({ length: INITIAL_CARD_COUNT }, createCard))]); setLibrariesReady(true); }
+      if (!cancelled) { setLibrariesLoadFailed(true); setLibrariesReady(true); }
     });
     return () => { cancelled = true; };
   }, []);
@@ -197,7 +198,7 @@ export default function Home() {
     if (preferencesReady) localStorage.setItem(LIBRARY_PREFERENCES_KEY, JSON.stringify(libraryPreferences));
   }, [appearance, cardSize, libraryPreferences, preferencesReady]);
 
-  useEffect(() => { saveLibraries(libraries); }, [libraries]);
+  useEffect(() => { if (librariesReady && !librariesLoadFailed) saveLibraries(libraries); }, [libraries, librariesLoadFailed, librariesReady]);
   useEffect(() => { setNavigationOverride(null); }, [routeSlug]);
   useEffect(() => {
     if (previousActiveIdRef.current === activeId) return;
@@ -424,7 +425,13 @@ export default function Home() {
     />
     {libraryDialog && <LibraryNameDialog mode={libraryDialog.mode} name={libraryName} inputRef={libraryNameInput} onNameChange={setLibraryName} onClose={() => setLibraryDialog(null)} onSubmit={saveLibraryName} />}
     <div className={`app-content${navigationPending ? " is-navigating" : ""}`} aria-busy={!librariesReady || navigationPending}>
-    {!activeId ? (
+    {librariesLoadFailed ? (
+      <div className="empty-state show" role="alert">
+        <h2>Couldn’t load your libraries</h2>
+        <p>Your saved data was left untouched. Check that browser storage is available, then reload the page.</p>
+        <button className="button primary" type="button" onClick={() => window.location.reload()}>Reload page</button>
+      </div>
+    ) : !activeId ? (
       <LibraryHome
         libraries={libraries}
         filteredLibraries={filteredLibraries}
