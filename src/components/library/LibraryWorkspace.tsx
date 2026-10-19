@@ -20,6 +20,7 @@ type LibraryWorkspaceProps = {
   onDeleteCard: (card: Card) => void;
   onChooseImage: (card: Card) => void;
   onDropImage: (card: Card, file: File) => void;
+  onDropImageUrl: (card: Card, url: string) => void;
   onReorder: (targetId: string, after: boolean) => void;
   onDragStart: (cardId: string) => void;
   onDragEnd: () => void;
@@ -28,7 +29,7 @@ type LibraryWorkspaceProps = {
 export default function LibraryWorkspace({
   library, cards, search, slotValue, onBack, onAddCard, onImport, onExport, onClear,
   onSearchChange, onSlotValueChange, onSetCardCount, onEditCard, onDeleteCard,
-  onChooseImage, onDropImage, onReorder, onDragStart, onDragEnd,
+  onChooseImage, onDropImage, onDropImageUrl, onReorder, onDragStart, onDragEnd,
 }: LibraryWorkspaceProps) {
   return (
     <>
@@ -92,6 +93,7 @@ export default function LibraryWorkspace({
               onDelete={() => onDeleteCard(card)}
               onImage={() => onChooseImage(card)}
               onDropImage={(file) => onDropImage(card, file)}
+              onDropImageUrl={(url) => onDropImageUrl(card, url)}
               onReorder={onReorder}
               onDragStart={() => onDragStart(card.id)}
               onDragEnd={onDragEnd}

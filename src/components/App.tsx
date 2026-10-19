@@ -291,6 +291,23 @@ export default function Home() {
     if (card.imageId && card.imageId !== imageId) await clearUnusedImagesSafely(nextLibraries);
     closeEditor(); setToast("Card saved.");
   }
+  async function removeEditorImage() {
+    if (!active || !editingId) return;
+    const card = active.cards.find((item) => item.id === editingId);
+    if (!card) return;
+    if (pendingImageUrl) URL.revokeObjectURL(pendingImageUrl);
+    setPendingImage(null);
+    setPendingImageUrl("");
+    setImageRemoved(true);
+    if (!card.imageId) return;
+    const nextLibraries = libraries.map((library) => library.id === active.id ? {
+      ...library,
+      cards: library.cards.map((current) => current.id === editingId ? { ...current, imageId: "" } : current),
+    } : library);
+    setLibraries(nextLibraries);
+    await clearUnusedImagesSafely(nextLibraries);
+    setToast("Image removed.");
+  }
   function addCard() { if (!active) return; const card = createCard(); updateLibrary(active.id, (item) => ({ ...item, cards: [card, ...item.cards], updatedAt: new Date().toISOString() })); openEditor(card); }
   function deleteCard(card: Card) {
     if (!active) return;
@@ -323,6 +340,20 @@ export default function Home() {
     const nextLibraries = libraries.map((library) => library.id === active.id ? { ...library, cards: library.cards.map((current) => current.id === card.id ? { ...current, imageId } : current) } : library);
     setLibraries(nextLibraries);
     if (card.imageId) await clearUnusedImagesSafely(nextLibraries); setToast("Image added.");
+  }
+  async function addCardImageFromUrl(card: Card, url: string) {
+    try {
+      const source = new URL(url);
+      if (source.protocol !== "http:" && source.protocol !== "https:") throw new Error("Unsupported image URL.");
+      const response = await fetch(source.href);
+      if (!response.ok) throw new Error("Image download failed.");
+      const blob = await response.blob();
+      if (!blob.type.startsWith("image/")) throw new Error("Dropped URL is not an image.");
+      const filename = decodeURIComponent(source.pathname.split("/").pop() || "dropped-image");
+      await addCardImage(card, new File([blob], filename, { type: blob.type }));
+    } catch {
+      setToast("Couldn’t import that image. Save it to your device and drop the file onto the card.");
+    }
   }
   async function exportLibrary() {
     if (!active) return;
@@ -469,6 +500,7 @@ export default function Home() {
         onDeleteCard={deleteCard}
         onChooseImage={(card) => { setImageTargetId(card.id); fileInput.current?.click(); }}
         onDropImage={(card, file) => void addCardImage(card, file)}
+        onDropImageUrl={(card, url) => void addCardImageFromUrl(card, url)}
         onReorder={reorder}
         onDragStart={setDraggedId}
         onDragEnd={() => setDraggedId("")}
@@ -482,7 +514,7 @@ export default function Home() {
     <input ref={fileInput} className="sr-only" type="file" accept="image/*" onChange={(event) => { const card = active?.cards.find((item) => item.id === imageTargetId); if (card) void addCardImage(card, event.target.files?.[0]); setImageTargetId(""); event.currentTarget.value = ""; }} />
     <input ref={editorImageInput} className="sr-only" type="file" accept="image/*" onChange={(event) => { chooseImage(event.target.files?.[0]); event.currentTarget.value = ""; }} />
     <input ref={importInput} className="sr-only" type="file" accept="application/json,.json" onChange={(event) => { void importLibrary(event.target.files?.[0]); event.currentTarget.value = ""; }} />
-    {editingCard && <CardEditorDialog title={title} link={link} imageId={editingCard.imageId} imageRemoved={imageRemoved} pendingImageUrl={pendingImageUrl} imageInputRef={editorImageInput} onTitleChange={setTitle} onLinkChange={setLink} onClose={closeEditor} onSubmit={(event) => void saveEditor(event)} onImageFile={chooseImage} onRemoveImage={() => { if (pendingImageUrl) URL.revokeObjectURL(pendingImageUrl); setPendingImage(null); setPendingImageUrl(""); setImageRemoved(true); }} />}
+    {editingCard && <CardEditorDialog title={title} link={link} imageId={editingCard.imageId} imageRemoved={imageRemoved} pendingImageUrl={pendingImageUrl} imageInputRef={editorImageInput} onTitleChange={setTitle} onLinkChange={setLink} onClose={closeEditor} onSubmit={(event) => void saveEditor(event)} onImageFile={chooseImage} onRemoveImage={() => void removeEditorImage()} />}
     {(undoAction || toast) && <div className={`toast show${undoAction ? " toast-undo" : ""}`} role="status" aria-live="polite">
       <span>{undoAction?.label ?? toast}</span>
       {undoAction && <button className="toast-undo-button" type="button" onClick={undoLastAction}>Undo</button>}

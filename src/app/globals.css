@@ -1100,6 +1100,7 @@ input[type="file"] {
 @media (max-width: 430px) { .container { grid-template-columns: 1fr; } }
 @media (max-width: 430px) { .container > div { contain-intrinsic-size: auto 560px; } }
 .card { overflow: hidden; border-radius: 13px; background: #0b0c0e; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease; }
+.card.is-image-drop-target { border-color: color-mix(in srgb, var(--accent) 78%, white 12%); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 34%, transparent), 0 18px 48px rgba(0,0,0,.38); }
 .card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 48%, rgba(255,255,255,.2)); box-shadow: 0 20px 56px rgba(0,0,0,.4); }
 .card:focus-within { border-color: color-mix(in srgb, var(--accent) 55%, rgba(255,255,255,.2)); }
 .card-drag-handle { position: absolute; z-index: 3; top: 10px; left: 10px; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; background: rgba(7,8,9,.78); color: #c3c5cc; font-size: 16px; line-height: 1; opacity: .92; cursor: grab; backdrop-filter: blur(10px); transition: color .18s ease, border-color .18s ease, background .18s ease, opacity .18s ease; }

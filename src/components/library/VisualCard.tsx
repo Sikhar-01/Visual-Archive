@@ -10,14 +10,16 @@ type VisualCardProps = {
   onDelete: () => void;
   onImage: () => void;
   onDropImage: (file: File) => void;
+  onDropImageUrl: (url: string) => void;
   onReorder: (targetId: string, after: boolean) => void;
   onDragStart: () => void;
   onDragEnd: () => void;
 };
 
-export default function VisualCard({ card, onEdit, onDelete, onImage, onDropImage, onReorder, onDragStart, onDragEnd }: VisualCardProps) {
+export default function VisualCard({ card, onEdit, onDelete, onImage, onDropImage, onDropImageUrl, onReorder, onDragStart, onDragEnd }: VisualCardProps) {
   const cardRef = useRef<HTMLElement>(null);
   const [shouldLoadImage, setShouldLoadImage] = useState(false);
+  const [isImageDropTarget, setIsImageDropTarget] = useState(false);
   const imageUrl = useImageUrl(card.imageId, shouldLoadImage);
   useEffect(() => {
     if (!card.imageId || shouldLoadImage || !cardRef.current) return;
@@ -32,30 +34,66 @@ export default function VisualCard({ card, onEdit, onDelete, onImage, onDropImag
   return (
     <article
       ref={cardRef}
-      className="card"
+      className={`card${isImageDropTarget ? " is-image-drop-target" : ""}`}
       draggable
       onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
+      onDragEnd={() => { setIsImageDropTarget(false); onDragEnd(); }}
+      onDragEnter={(event) => {
+        const types = Array.from(event.dataTransfer.types);
+        if (types.includes("Files") || types.includes("text/uri-list") || types.includes("text/html")) setIsImageDropTarget(true);
+      }}
+      onDragLeave={(event) => {
+        if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) setIsImageDropTarget(false);
+      }}
       onDragOver={(event) => {
-        if (event.dataTransfer.types.includes("application/x-library-card")) event.preventDefault();
+        const types = Array.from(event.dataTransfer.types);
+        const hasDroppedFiles = types.includes("Files");
+        const isReorderingCard = types.includes("application/x-library-card");
+        const hasImageReference = types.includes("text/uri-list") || types.includes("text/html");
+        if (hasDroppedFiles || isReorderingCard || hasImageReference) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = isReorderingCard ? "move" : "copy";
+        }
       }}
       onDrop={(event) => {
+        setIsImageDropTarget(false);
+        const files = Array.from(event.dataTransfer.files);
+        if (files.length) {
+          event.preventDefault();
+          event.stopPropagation();
+          onDropImage(files.find((item) => item.type.startsWith("image/")) ?? files[0]);
+          return;
+        }
         const dragged = event.dataTransfer.getData("application/x-library-card");
         if (dragged) {
           event.preventDefault();
           const rect = event.currentTarget.getBoundingClientRect();
           onReorder(card.id, event.clientX > rect.left + rect.width / 2);
-        } else if (event.dataTransfer.files[0]) {
+          return;
+        }
+        const uriList = event.dataTransfer.getData("text/uri-list");
+        const uri = uriList.split(/\r?\n/).find((line) => line && !line.startsWith("#"));
+        const html = event.dataTransfer.getData("text/html");
+        const imageSource = uri || (html ? new DOMParser().parseFromString(html, "text/html").querySelector("img")?.getAttribute("src") : null);
+        if (imageSource) {
           event.preventDefault();
-          onDropImage(event.dataTransfer.files[0]);
+          event.stopPropagation();
+          try { onDropImageUrl(new URL(imageSource, window.location.href).href); } catch { /* Ignore invalid dropped URLs. */ }
         }
       }}
     >
       <span className="card-drag-handle" aria-hidden="true" title="Drag to reorder">⠿</span>
       <div className={`media ${imageUrl ? "has-image" : "media-empty"}`} onClick={() => !imageUrl && onImage()}>
         {imageUrl ? (
-          <a href={card.link || undefined} target={card.link ? "_blank" : undefined} rel="noreferrer" onClick={(event) => { if (!card.link) event.preventDefault(); }}>
-            <img src={imageUrl} alt={card.title} loading="lazy" decoding="async" />
+          <a
+            href={card.link || undefined}
+            target={card.link ? "_blank" : undefined}
+            rel="noreferrer"
+            draggable={false}
+            onClick={(event) => { if (!card.link) event.preventDefault(); }}
+            onDragStart={(event) => { event.preventDefault(); event.stopPropagation(); }}
+          >
+            <img src={imageUrl} alt={card.title} loading="lazy" decoding="async" draggable={false} />
           </a>
         ) : card.imageId ? (
           <div className="media-loading" aria-label="Loading image" />
