@@ -814,6 +814,7 @@ button {
 .how-to-content h3 { margin: 0 0 6px; color: var(--text); font-size: 14px; }
 .how-to-content p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
 .how-to-content strong { color: #e6e6eb; font-weight: 600; }
+.how-to-content kbd { display: inline-block; margin: 0 2px; padding: 2px 6px; border: 1px solid rgba(255,255,255,.16); border-radius: 5px; background: rgba(255,255,255,.06); color: #e6e6eb; font-family: var(--font-mono); font-size: 10px; line-height: 1.5; }
 .how-to-modal .modal-footer { border-top: 1px solid var(--line); }
 
 @keyframes backdrop-in {

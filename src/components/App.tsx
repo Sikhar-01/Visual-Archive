@@ -55,6 +55,7 @@ export default function Home() {
   const [libraryPreferences, setLibraryPreferences] = useState<Record<string, LibraryPreferences>>({});
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [howToOpen, setHowToOpen] = useState(false);
   const [slotValue, setSlotValue] = useState(0);
   const [draggedId, setDraggedId] = useState("");
   const [draggedLibraryId, setDraggedLibraryId] = useState("");
@@ -68,6 +69,7 @@ export default function Home() {
   const editorImageInput = useRef<HTMLInputElement>(null);
   const importInput = useRef<HTMLInputElement>(null);
   const libraryNameInput = useRef<HTMLInputElement>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
 
   function navigateToLibrary(id: string | null, libraryList = libraries, replace = false) {
     const library = id ? libraryList.find((item) => item.id === id) : null;
@@ -309,6 +311,46 @@ export default function Home() {
     setToast("Image removed.");
   }
   function addCard() { if (!active) return; const card = createCard(); updateLibrary(active.id, (item) => ({ ...item, cards: [card, ...item.cards], updatedAt: new Date().toISOString() })); openEditor(card); }
+  useEffect(() => {
+    function handleShortcut(event: KeyboardEvent) {
+      const target = event.target;
+      const isTyping = target instanceof HTMLElement && (target.isContentEditable || Boolean(target.closest("input, textarea, select")));
+      const key = event.key.toLowerCase();
+      const isSearchShortcut = (event.ctrlKey || event.metaKey) && key === "k";
+
+      if (event.key === "Escape") {
+        if (editingId) closeEditor();
+        else if (libraryDialog) setLibraryDialog(null);
+        else if (confirmation) setConfirmation(null);
+        else if (appearanceOpen) closeAppearance();
+        else if (howToOpen) setHowToOpen(false);
+        else return;
+        event.preventDefault();
+        return;
+      }
+      if (event.altKey) return;
+      if (isSearchShortcut) {
+        if (editingId || libraryDialog || confirmation || appearanceOpen || howToOpen) return;
+        event.preventDefault();
+        searchInput.current?.focus();
+        return;
+      }
+      if (isTyping || event.ctrlKey || event.metaKey) return;
+      if (event.key === "/") {
+        event.preventDefault();
+        searchInput.current?.focus();
+      } else if (!event.shiftKey && key === "n" && librariesReady && !editingId && !libraryDialog && !confirmation && !appearanceOpen && !howToOpen) {
+        event.preventDefault();
+        if (activeId) addCard();
+        else createNewLibrary();
+      } else if (event.key === "?" && !activeId && !editingId && !libraryDialog && !confirmation && !appearanceOpen) {
+        event.preventDefault();
+        setHowToOpen(true);
+      }
+    }
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [activeId, appearanceOpen, confirmation, editingId, howToOpen, libraryDialog, libraries, librariesReady, pendingImageUrl]);
   function deleteCard(card: Card) {
     if (!active) return;
     setConfirmation({
@@ -468,6 +510,9 @@ export default function Home() {
         filteredLibraries={filteredLibraries}
         loading={!librariesReady}
         search={librarySearch}
+        searchInputRef={searchInput}
+        howToOpen={howToOpen}
+        onHowToOpenChange={setHowToOpen}
         onSearchChange={setLibrarySearch}
         onCreate={createNewLibrary}
         onOpen={(library) => navigateToLibrary(library.id)}
@@ -487,6 +532,7 @@ export default function Home() {
         library={active}
         cards={filteredCards}
         search={search}
+        searchInputRef={searchInput}
         slotValue={slotValue}
         onBack={() => navigateToLibrary(null)}
         onAddCard={addCard}

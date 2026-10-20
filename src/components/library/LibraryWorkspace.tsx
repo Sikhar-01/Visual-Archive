@@ -2,11 +2,13 @@
 
 import type { Card, Library } from "@/lib/model";
 import VisualCard from "@/components/library/VisualCard";
+import type { RefObject } from "react";
 
 type LibraryWorkspaceProps = {
   library: Library;
   cards: Card[];
   search: string;
+  searchInputRef: RefObject<HTMLInputElement | null>;
   slotValue: number;
   onBack: () => void;
   onAddCard: () => void;
@@ -27,7 +29,7 @@ type LibraryWorkspaceProps = {
 };
 
 export default function LibraryWorkspace({
-  library, cards, search, slotValue, onBack, onAddCard, onImport, onExport, onClear,
+  library, cards, search, searchInputRef, slotValue, onBack, onAddCard, onImport, onExport, onClear,
   onSearchChange, onSlotValueChange, onSetCardCount, onEditCard, onDeleteCard,
   onChooseImage, onDropImage, onDropImageUrl, onReorder, onDragStart, onDragEnd,
 }: LibraryWorkspaceProps) {
@@ -52,7 +54,7 @@ export default function LibraryWorkspace({
       <section className="controls" aria-label="Library controls">
         <label className="search-wrap">
           <span aria-hidden="true">⌕</span>
-          <input type="search" placeholder="Search titles or links" value={search} onChange={(event) => onSearchChange(event.target.value)} />
+          <input ref={searchInputRef} type="search" placeholder="Search titles or links" value={search} onChange={(event) => onSearchChange(event.target.value)} />
         </label>
         <div className="slot-control">
           <label htmlFor="slotCount">Cards</label>
